@@ -4,6 +4,8 @@ A lightweight scratchpad that lives one shortcut away. Draft a message, hit the 
 
 Built for the workflow of writing chat messages, AI prompts, and quick notes that you type once and send.
 
+[![Demo](https://img.youtube.com/vi/gTxsu51w9RA/maxresdefault.jpg)](https://youtu.be/gTxsu51w9RA)
+
 ## Install
 
 ### macOS (Homebrew)
