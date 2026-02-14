@@ -319,6 +319,23 @@ body {
   outline-offset: 2px;
 }
 
+.settings-select {
+  padding: 6px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  cursor: pointer;
+}
+
+.settings-select:focus {
+  border-color: var(--accent);
+}
+
+
 .shortcut-current {
   font-size: 13px;
   color: var(--text-secondary);

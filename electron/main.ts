@@ -17,6 +17,8 @@ const defaultMod = 'Control'
 interface Config {
   shortcut: string
   alwaysOnTop: boolean
+  indentType: 'space' | 'tab'
+  indentSize: number
 }
 
 interface HistoryEntry {
@@ -32,12 +34,16 @@ function loadConfig(): Config {
       return {
         shortcut: saved.shortcut || `${defaultMod}+J`,
         alwaysOnTop: saved.alwaysOnTop === true,
+        indentType: saved.indentType === 'tab' ? 'tab' : 'space',
+        indentSize: [2, 4, 6, 8].includes(Number(saved.indentSize)) ? Number(saved.indentSize) : 2,
       }
     }
   } catch {}
   return {
     shortcut: `${defaultMod}+J`,
     alwaysOnTop: false,
+    indentType: 'space',
+    indentSize: 2,
   }
 }
 
@@ -207,6 +213,13 @@ app.whenReady().then(() => {
     saveConfig(config)
     win?.setAlwaysOnTop(config.alwaysOnTop)
     return config.alwaysOnTop
+  })
+
+  ipcMain.handle('set-indent', (_event, indentType: string, indentSize: number) => {
+    const config = loadConfig()
+    config.indentType = indentType === 'tab' ? 'tab' : 'space'
+    config.indentSize = [2, 4, 6, 8].includes(indentSize) ? indentSize : 2
+    saveConfig(config)
   })
 
   ipcMain.handle('hide-window', () => {

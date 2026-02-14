@@ -11,6 +11,8 @@ function App() {
   const [alwaysOnTop, setAlwaysOnTop] = useState(false)
   const [recording, setRecording] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
+  const [indentType, setIndentType] = useState<'space' | 'tab'>('space')
+  const [indentSize, setIndentSize] = useState(2)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
   })
@@ -27,6 +29,8 @@ function App() {
       setToggleShortcut(config.shortcut)
       setToggleShortcutInput(config.shortcut)
       setAlwaysOnTop(config.alwaysOnTop)
+      setIndentType(config.indentType)
+      setIndentSize(config.indentSize)
     })
   }, [])
 
@@ -112,6 +116,61 @@ function App() {
     const applied = await window.electronAPI.setAlwaysOnTop(next)
     setAlwaysOnTop(applied)
   }, [])
+
+  const handleIndentTypeChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value as 'space' | 'tab'
+    setIndentType(newType)
+    await window.electronAPI.setIndent(newType, indentSize)
+  }, [indentSize])
+
+  const handleIndentSizeChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = Number(e.target.value)
+    setIndentSize(newSize)
+    await window.electronAPI.setIndent(indentType, newSize)
+  }, [indentType])
+
+  const handleTabKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Tab') return
+    e.preventDefault()
+    const textarea = e.currentTarget
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const value = textarea.value
+
+    if (e.shiftKey) {
+      // Shift+Tab: remove indent from beginning of current line
+      const lineStart = value.lastIndexOf('\n', start - 1) + 1
+      const linePrefix = value.slice(lineStart, start)
+      let removeCount = 0
+      if (indentType === 'tab' && linePrefix.startsWith('\t')) {
+        removeCount = 1
+      } else {
+        const match = linePrefix.match(/^ +/)
+        if (match) {
+          removeCount = Math.min(match[0].length, indentSize)
+        }
+      }
+      if (removeCount > 0) {
+        const newValue = value.slice(0, lineStart) + value.slice(lineStart + removeCount)
+        setText(newValue)
+        const newPos = Math.max(lineStart, start - removeCount)
+        requestAnimationFrame(() => {
+          textarea.selectionStart = newPos
+          textarea.selectionEnd = Math.max(lineStart, end - removeCount)
+        })
+      }
+    } else {
+      // Tab: insert indent
+      const indent = indentType === 'tab' ? '\t' : ' '.repeat(indentSize)
+      const newValue = value.slice(0, start) + indent + value.slice(end)
+      setText(newValue)
+      const newPos = start + indent.length
+      requestAnimationFrame(() => {
+        textarea.selectionStart = newPos
+        textarea.selectionEnd = newPos
+      })
+    }
+  }, [indentType, indentSize])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -224,8 +283,10 @@ function App() {
         <textarea
           ref={textareaRef}
           className="editor"
+          style={{ tabSize: indentSize }}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleTabKey}
           placeholder="Type here..."
           spellCheck={false}
           autoFocus
@@ -293,6 +354,33 @@ function App() {
                     />
                     <span className="switch-slider" />
                   </label>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div className="settings-label">Indent</div>
+                <div className="settings-row" style={{ marginBottom: 8 }}>
+                  <span className="setting-description">Type</span>
+                  <select
+                    className="settings-select"
+                    value={indentType}
+                    onChange={handleIndentTypeChange}
+                  >
+                    <option value="space">Spaces</option>
+                    <option value="tab">Tab</option>
+                  </select>
+                </div>
+                <div className="settings-row">
+                  <span className="setting-description">Size</span>
+                  <select
+                    className="settings-select"
+                    value={indentSize}
+                    onChange={handleIndentSizeChange}
+                  >
+                    <option value={2}>2</option>
+                    <option value={4}>4</option>
+                    <option value={6}>6</option>
+                    <option value={8}>8</option>
+                  </select>
                 </div>
               </div>
               <div className="settings-item">

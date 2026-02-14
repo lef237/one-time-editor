@@ -7,6 +7,8 @@ export interface HistoryEntry {
 export interface AppConfig {
   shortcut: string
   alwaysOnTop: boolean
+  indentType: 'space' | 'tab'
+  indentSize: number
 }
 
 export interface ElectronAPI {
@@ -18,6 +20,7 @@ export interface ElectronAPI {
   getConfig: () => Promise<AppConfig>
   setShortcut: (shortcut: string) => Promise<boolean>
   setAlwaysOnTop: (alwaysOnTop: boolean) => Promise<boolean>
+  setIndent: (indentType: string, indentSize: number) => Promise<void>
   hideWindow: () => Promise<void>
 }
 
