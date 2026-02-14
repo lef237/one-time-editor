@@ -4,13 +4,20 @@ export interface HistoryEntry {
   createdAt: string
 }
 
+export interface AppConfig {
+  shortcut: string
+  copyShortcut: string
+}
+
 export interface ElectronAPI {
   getHistory: () => Promise<HistoryEntry[]>
   saveToHistory: (text: string) => Promise<HistoryEntry[]>
   deleteHistoryEntry: (id: string) => Promise<HistoryEntry[]>
   copyToClipboard: (text: string) => Promise<void>
-  getShortcut: () => Promise<string>
+  syncText: (text: string) => Promise<void>
+  getConfig: () => Promise<AppConfig>
   setShortcut: (shortcut: string) => Promise<boolean>
+  setCopyShortcut: (shortcut: string) => Promise<boolean>
   hideWindow: () => Promise<void>
 }
 

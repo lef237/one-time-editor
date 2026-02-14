@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { HistoryEntry } from './types'
 
+type RecordingTarget = null | 'toggle' | 'copy'
+
 function App() {
   const [text, setText] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [shortcut, setShortcut] = useState('')
-  const [shortcutInput, setShortcutInput] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
+  const [toggleShortcut, setToggleShortcut] = useState('')
+  const [toggleShortcutInput, setToggleShortcutInput] = useState('')
+  const [copyShortcut, setCopyShortcut] = useState('')
+  const [copyShortcutInput, setCopyShortcutInput] = useState('')
+  const [recording, setRecording] = useState<RecordingTarget>(null)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
@@ -22,11 +26,18 @@ function App() {
 
   useEffect(() => {
     window.electronAPI.getHistory().then(setHistory)
-    window.electronAPI.getShortcut().then((s) => {
-      setShortcut(s)
-      setShortcutInput(s)
+    window.electronAPI.getConfig().then((config) => {
+      setToggleShortcut(config.shortcut)
+      setToggleShortcutInput(config.shortcut)
+      setCopyShortcut(config.copyShortcut)
+      setCopyShortcutInput(config.copyShortcut)
     })
   }, [])
+
+  // Sync text to main process for copy shortcut
+  useEffect(() => {
+    window.electronAPI.syncText(text)
+  }, [text])
 
   useEffect(() => {
     if (!showHistory && !showSettings) {
@@ -71,7 +82,7 @@ function App() {
   }, [])
 
   const handleShortcutKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!isRecording) return
+    if (!recording) return
     e.preventDefault()
     e.stopPropagation()
 
@@ -79,7 +90,8 @@ function App() {
     if (modifierKeys.includes(e.key)) return
 
     const parts: string[] = []
-    if (e.ctrlKey || e.metaKey) parts.push('CommandOrControl')
+    if (e.metaKey) parts.push('Command')
+    if (e.ctrlKey) parts.push('Control')
     if (e.altKey) parts.push('Alt')
     if (e.shiftKey) parts.push('Shift')
 
@@ -87,19 +99,31 @@ function App() {
     parts.push(key)
 
     const combo = parts.join('+')
-    setShortcutInput(combo)
-    setIsRecording(false)
-  }, [isRecording])
+    if (recording === 'toggle') {
+      setToggleShortcutInput(combo)
+    } else {
+      setCopyShortcutInput(combo)
+    }
+    setRecording(null)
+  }, [recording])
 
-  const handleSaveShortcut = useCallback(async () => {
-    if (shortcutInput.trim()) {
-      const success = await window.electronAPI.setShortcut(shortcutInput)
+  const handleSaveToggleShortcut = useCallback(async () => {
+    if (toggleShortcutInput.trim()) {
+      const success = await window.electronAPI.setShortcut(toggleShortcutInput)
       if (success) {
-        setShortcut(shortcutInput)
-        setShowSettings(false)
+        setToggleShortcut(toggleShortcutInput)
       }
     }
-  }, [shortcutInput])
+  }, [toggleShortcutInput])
+
+  const handleSaveCopyShortcut = useCallback(async () => {
+    if (copyShortcutInput.trim()) {
+      const success = await window.electronAPI.setCopyShortcut(copyShortcutInput)
+      if (success) {
+        setCopyShortcut(copyShortcutInput)
+      }
+    }
+  }, [copyShortcutInput])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -265,26 +289,45 @@ function App() {
             </div>
             <div className="panel-content">
               <div className="settings-item">
-                <label>Shortcut Key</label>
+                <label>Toggle Window</label>
                 <div className="shortcut-current">
-                  Current: <code>{shortcut}</code>
+                  Current: <code>{toggleShortcut}</code>
                 </div>
                 <input
                   type="text"
-                  className={`shortcut-input ${isRecording ? 'recording' : ''}`}
-                  value={isRecording ? 'Press keys...' : shortcutInput}
+                  className={`shortcut-input ${recording === 'toggle' ? 'recording' : ''}`}
+                  value={recording === 'toggle' ? 'Press keys...' : toggleShortcutInput}
                   onKeyDown={handleShortcutKeyDown}
-                  onFocus={() => setIsRecording(true)}
-                  onBlur={() => setIsRecording(false)}
+                  onFocus={() => setRecording('toggle')}
+                  onBlur={() => setRecording(null)}
                   readOnly
                   placeholder="Click to record shortcut"
                 />
-                <button className="btn-save" onClick={handleSaveShortcut}>
+                <button className="btn-save" onClick={handleSaveToggleShortcut}>
                   Save
                 </button>
-                <div className="shortcut-hint">
-                  The shortcut toggles the window. When hiding, the editor text is automatically copied to clipboard.
+              </div>
+              <div className="settings-item">
+                <label>Copy Text</label>
+                <div className="shortcut-current">
+                  Current: <code>{copyShortcut}</code>
                 </div>
+                <input
+                  type="text"
+                  className={`shortcut-input ${recording === 'copy' ? 'recording' : ''}`}
+                  value={recording === 'copy' ? 'Press keys...' : copyShortcutInput}
+                  onKeyDown={handleShortcutKeyDown}
+                  onFocus={() => setRecording('copy')}
+                  onBlur={() => setRecording(null)}
+                  readOnly
+                  placeholder="Click to record shortcut"
+                />
+                <button className="btn-save" onClick={handleSaveCopyShortcut}>
+                  Save
+                </button>
+              </div>
+              <div className="shortcut-hint">
+                The copy shortcut works even when the window is hidden.
               </div>
             </div>
           </div>

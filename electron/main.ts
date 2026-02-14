@@ -5,14 +5,18 @@ import fs from 'node:fs'
 process.env.DIST = path.join(__dirname, '../dist')
 
 let win: BrowserWindow | null = null
+let currentText = ''
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 // Config and history file paths
 const configPath = path.join(app.getPath('userData'), 'config.json')
 const historyPath = path.join(app.getPath('userData'), 'history.json')
 
+const defaultMod = process.platform === 'darwin' ? 'Command' : 'Control'
+
 interface Config {
   shortcut: string
+  copyShortcut: string
 }
 
 interface HistoryEntry {
@@ -24,10 +28,14 @@ interface HistoryEntry {
 function loadConfig(): Config {
   try {
     if (fs.existsSync(configPath)) {
-      return JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      const saved = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      return {
+        shortcut: saved.shortcut || `${defaultMod}+J`,
+        copyShortcut: saved.copyShortcut || `${defaultMod}+K`,
+      }
     }
   } catch {}
-  return { shortcut: 'CommandOrControl+J' }
+  return { shortcut: `${defaultMod}+J`, copyShortcut: `${defaultMod}+K` }
 }
 
 function saveConfig(config: Config) {
@@ -85,20 +93,12 @@ function createWindow() {
   }
 }
 
-async function toggleWindow() {
+function toggleWindow() {
   if (!win) {
     createWindow()
     return
   }
   if (win.isVisible()) {
-    try {
-      const text: string = await win.webContents.executeJavaScript(
-        'document.querySelector(".editor")?.value || ""'
-      )
-      if (text.trim()) {
-        clipboard.writeText(text)
-      }
-    } catch {}
     win.hide()
   } else {
     win.show()
@@ -106,20 +106,32 @@ async function toggleWindow() {
   }
 }
 
-function registerShortcut(shortcut: string) {
+function copyText() {
+  if (currentText.trim()) {
+    clipboard.writeText(currentText)
+  }
+}
+
+const shortcutValidator = /^(Command|Control|Alt|Shift|Meta|Super)(\+(Command|Control|Alt|Shift|Meta|Super))*\+[A-Za-z0-9]$/
+
+function registerShortcuts(config: Config) {
   globalShortcut.unregisterAll()
   try {
-    globalShortcut.register(shortcut, toggleWindow)
+    globalShortcut.register(config.shortcut, toggleWindow)
   } catch {
-    // Fallback
-    globalShortcut.register('CommandOrControl+J', toggleWindow)
+    globalShortcut.register(`${defaultMod}+J`, toggleWindow)
+  }
+  try {
+    globalShortcut.register(config.copyShortcut, copyText)
+  } catch {
+    globalShortcut.register(`${defaultMod}+K`, copyText)
   }
 }
 
 app.whenReady().then(() => {
   const config = loadConfig()
   createWindow()
-  registerShortcut(config.shortcut)
+  registerShortcuts(config)
 
   // IPC handlers
   ipcMain.handle('get-history', () => {
@@ -154,18 +166,29 @@ app.whenReady().then(() => {
     clipboard.writeText(text)
   })
 
-  ipcMain.handle('get-shortcut', () => {
-    return loadConfig().shortcut
+  ipcMain.handle('sync-text', (_event, text: string) => {
+    currentText = text
+  })
+
+  ipcMain.handle('get-config', () => {
+    return loadConfig()
   })
 
   ipcMain.handle('set-shortcut', (_event, shortcut: string) => {
-    // Validate shortcut format before registering
-    const valid = /^(CommandOrControl|Control|Alt|Shift|Meta|Super)(\+(CommandOrControl|Control|Alt|Shift|Meta|Super))*\+[A-Za-z0-9]$/.test(shortcut)
-    if (!valid) return false
+    if (!shortcutValidator.test(shortcut)) return false
     const config = loadConfig()
     config.shortcut = shortcut
     saveConfig(config)
-    registerShortcut(shortcut)
+    registerShortcuts(config)
+    return true
+  })
+
+  ipcMain.handle('set-copy-shortcut', (_event, shortcut: string) => {
+    if (!shortcutValidator.test(shortcut)) return false
+    const config = loadConfig()
+    config.copyShortcut = shortcut
+    saveConfig(config)
+    registerShortcuts(config)
     return true
   })
 

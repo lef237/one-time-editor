@@ -5,7 +5,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveToHistory: (text: string) => ipcRenderer.invoke('save-to-history', text),
   deleteHistoryEntry: (id: string) => ipcRenderer.invoke('delete-history-entry', id),
   copyToClipboard: (text: string) => ipcRenderer.invoke('copy-to-clipboard', text),
-  getShortcut: () => ipcRenderer.invoke('get-shortcut'),
+  syncText: (text: string) => ipcRenderer.invoke('sync-text', text),
+  getConfig: () => ipcRenderer.invoke('get-config'),
   setShortcut: (shortcut: string) => ipcRenderer.invoke('set-shortcut', shortcut),
+  setCopyShortcut: (shortcut: string) => ipcRenderer.invoke('set-copy-shortcut', shortcut),
   hideWindow: () => ipcRenderer.invoke('hide-window'),
 })
