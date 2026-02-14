@@ -27,7 +27,7 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  padding: 0 80px 0 16px;
+  padding: 0 16px 0 80px;
   background: #181825;
   border-bottom: 1px solid #313244;
   -webkit-app-region: drag;
