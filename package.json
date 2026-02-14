@@ -22,14 +22,17 @@
     ],
     "mac": {
       "target": ["dmg"],
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns"
     },
     "win": {
-      "target": ["nsis"]
+      "target": ["nsis"],
+      "icon": "build/icon.ico"
     },
     "linux": {
       "target": ["AppImage"],
-      "category": "Utility"
+      "category": "Utility",
+      "icon": "build/icon.png"
     }
   },
   "devDependencies": {
