@@ -67,7 +67,7 @@ function createWindow() {
     frame: false,
     show: false,
     skipTaskbar: false,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
   })
 
   win.on('ready-to-show', () => {
@@ -75,10 +75,6 @@ function createWindow() {
     win?.focus()
   })
 
-  win.on('blur', () => {
-    // Hide window on blur
-    win?.hide()
-  })
 
   win.on('closed', () => {
     win = null

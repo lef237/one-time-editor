@@ -23,8 +23,6 @@ The shortcut is fully customizable — open settings and press your preferred ke
 - **History** — Past entries are saved automatically when you start a new draft (up to 100)
 - **Dark / Light theme** — Toggle between Catppuccin Mocha and Latte
 - **Configurable shortcut** — Change the global shortcut in settings by pressing your desired key combination
-- **Always on top** — The editor floats above other windows
-- **Auto-hide on blur** — Click away and the editor gets out of your way
 
 ## Setup
 
