@@ -12,7 +12,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 const configPath = path.join(app.getPath('userData'), 'config.json')
 const historyPath = path.join(app.getPath('userData'), 'history.json')
 
-const defaultMod = process.platform === 'darwin' ? 'Command' : 'Control'
+const defaultMod = 'Control'
 
 interface Config {
   shortcut: string

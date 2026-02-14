@@ -10,7 +10,7 @@ Pre-built binaries for macOS, Windows, and Linux are available on the [Releases]
 
 ## How it works
 
-1. Press `Cmd+J` (macOS) / `Ctrl+J` (Windows/Linux) to summon the editor
+1. Press `Ctrl+J` to summon the editor
 2. Type your text
 3. Press the shortcut again — the window disappears and your text is copied to clipboard
 4. Paste wherever you need it
