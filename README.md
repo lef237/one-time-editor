@@ -4,19 +4,24 @@ A lightweight scratchpad that lives one shortcut away. Draft a message, hit the 
 
 Built for the workflow of writing chat messages, AI prompts, and quick notes that you type once and send.
 
-## Download
+## Install
+
+### macOS (Homebrew)
+
+```bash
+brew tap lef237/tap
+brew install --cask one-time-editor
+```
+
+### Manual download
 
 Pre-built binaries for macOS, Windows, and Linux are available on the [Releases](https://github.com/lef237/one-time-editor/releases) page.
 
-### Note for macOS users
-
-This app is not signed with an Apple Developer certificate, so macOS may show a warning when you first open it. To allow it, run this command in Terminal:
+If you download manually on macOS, the app is not signed with an Apple Developer certificate, so macOS may show a warning. To allow it, run:
 
 ```bash
 xattr -cr "/Applications/One-Time Editor.app"
 ```
-
-If you installed it in a different location, replace the path accordingly.
 
 ## How it works
 
