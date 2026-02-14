@@ -41,10 +41,9 @@ function App() {
   const handleCopy = useCallback(async () => {
     if (!text.trim()) return
     await window.electronAPI.copyToClipboard(text)
-    await saveCurrentText()
     setCopyFeedback(true)
     setTimeout(() => setCopyFeedback(false), 1500)
-  }, [text, saveCurrentText])
+  }, [text])
 
   const handleSelectHistory = useCallback(async (entry: HistoryEntry) => {
     if (text.trim()) {
