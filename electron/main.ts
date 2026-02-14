@@ -81,6 +81,10 @@ function createWindow(config: Config) {
   })
 
 
+  win.on('close', () => {
+    saveCurrentTextToHistory()
+  })
+
   win.on('closed', () => {
     win = null
   })
@@ -114,6 +118,21 @@ function copyText() {
   if (currentText.trim()) {
     clipboard.writeText(currentText)
   }
+}
+
+function saveCurrentTextToHistory() {
+  if (!currentText.trim()) return
+  const history = loadHistory()
+  const entry: HistoryEntry = {
+    id: Date.now().toString(),
+    text: currentText,
+    createdAt: new Date().toISOString(),
+  }
+  history.unshift(entry)
+  if (history.length > 100) {
+    history.splice(100)
+  }
+  saveHistory(history)
 }
 
 const shortcutValidator = /^(Command|Control|Alt|Shift|Meta|Super)(\+(Command|Control|Alt|Shift|Meta|Super))*\+[A-Za-z0-9]$/
@@ -211,5 +230,6 @@ app.on('activate', () => {
 })
 
 app.on('will-quit', () => {
+  saveCurrentTextToHistory()
   globalShortcut.unregisterAll()
 })
