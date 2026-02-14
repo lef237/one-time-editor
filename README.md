@@ -6,6 +6,8 @@ Built for the workflow of writing chat messages, AI prompts, and quick notes tha
 
 [![Demo](https://img.youtube.com/vi/gTxsu51w9RA/maxresdefault.jpg)](https://youtu.be/gTxsu51w9RA)
 
+https://youtu.be/gTxsu51w9RA
+
 ## Install
 
 ### macOS (Homebrew)
