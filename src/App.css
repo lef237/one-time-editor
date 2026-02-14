@@ -300,6 +300,7 @@ body {
 }
 
 .btn-save {
+  margin-top: 12px;
   padding: 6px 16px;
   background: var(--accent);
   color: var(--bg-primary);
