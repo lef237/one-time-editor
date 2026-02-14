@@ -178,6 +178,11 @@ function App() {
       saveCurrentText()
       return
     }
+    if (e.key === 't' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      handleNew()
+      return
+    }
     if (e.key === 'Escape') {
       if (showHistory) {
         setShowHistory(false)
@@ -187,7 +192,7 @@ function App() {
         window.electronAPI.hideWindow()
       }
     }
-  }, [showHistory, showSettings, saveCurrentText])
+  }, [showHistory, showSettings, saveCurrentText, handleNew])
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
