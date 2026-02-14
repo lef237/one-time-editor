@@ -130,7 +130,7 @@ function App() {
   }, [indentType])
 
   const handleTabKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key !== 'Tab') return
+    if (e.key !== 'Tab' || e.nativeEvent.isComposing) return
     e.preventDefault()
     const textarea = e.currentTarget
     const start = textarea.selectionStart
@@ -173,6 +173,11 @@ function App() {
   }, [indentType, indentSize])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      saveCurrentText()
+      return
+    }
     if (e.key === 'Escape') {
       if (showHistory) {
         setShowHistory(false)
@@ -182,7 +187,7 @@ function App() {
         window.electronAPI.hideWindow()
       }
     }
-  }, [showHistory, showSettings])
+  }, [showHistory, showSettings, saveCurrentText])
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
