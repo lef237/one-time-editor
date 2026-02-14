@@ -16,6 +16,7 @@ const defaultMod = process.platform === 'darwin' ? 'Command' : 'Control'
 
 interface Config {
   shortcut: string
+  alwaysOnTop: boolean
 }
 
 interface HistoryEntry {
@@ -30,10 +31,14 @@ function loadConfig(): Config {
       const saved = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
       return {
         shortcut: saved.shortcut || `${defaultMod}+J`,
+        alwaysOnTop: saved.alwaysOnTop === true,
       }
     }
   } catch {}
-  return { shortcut: `${defaultMod}+J` }
+  return {
+    shortcut: `${defaultMod}+J`,
+    alwaysOnTop: false,
+  }
 }
 
 function saveConfig(config: Config) {
@@ -53,7 +58,7 @@ function saveHistory(history: HistoryEntry[]) {
   fs.writeFileSync(historyPath, JSON.stringify(history, null, 2))
 }
 
-function createWindow() {
+function createWindow(config: Config) {
   win = new BrowserWindow({
     width: 700,
     height: 500,
@@ -67,7 +72,7 @@ function createWindow() {
     frame: false,
     show: false,
     skipTaskbar: false,
-    alwaysOnTop: false,
+    alwaysOnTop: config.alwaysOnTop,
   })
 
   win.on('ready-to-show', () => {
@@ -89,7 +94,7 @@ function createWindow() {
 
 function toggleWindow() {
   if (!win) {
-    createWindow()
+    createWindow(loadConfig())
     return
   }
   if (win.isVisible()) {
@@ -124,7 +129,7 @@ function registerShortcut(config: Config) {
 
 app.whenReady().then(() => {
   const config = loadConfig()
-  createWindow()
+  createWindow(config)
   registerShortcut(config)
 
   // IPC handlers
@@ -177,6 +182,14 @@ app.whenReady().then(() => {
     return true
   })
 
+  ipcMain.handle('set-always-on-top', (_event, alwaysOnTop: boolean) => {
+    const config = loadConfig()
+    config.alwaysOnTop = alwaysOnTop === true
+    saveConfig(config)
+    win?.setAlwaysOnTop(config.alwaysOnTop)
+    return config.alwaysOnTop
+  })
+
   ipcMain.handle('hide-window', () => {
     win?.hide()
   })
@@ -190,7 +203,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (!win) {
-    createWindow()
+    createWindow(loadConfig())
   } else {
     win.show()
     win.focus()

@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   syncText: (text: string) => ipcRenderer.invoke('sync-text', text),
   getConfig: () => ipcRenderer.invoke('get-config'),
   setShortcut: (shortcut: string) => ipcRenderer.invoke('set-shortcut', shortcut),
+  setAlwaysOnTop: (alwaysOnTop: boolean) => ipcRenderer.invoke('set-always-on-top', alwaysOnTop),
   hideWindow: () => ipcRenderer.invoke('hide-window'),
 })

@@ -8,6 +8,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [toggleShortcut, setToggleShortcut] = useState('')
   const [toggleShortcutInput, setToggleShortcutInput] = useState('')
+  const [alwaysOnTop, setAlwaysOnTop] = useState(false)
   const [recording, setRecording] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -25,6 +26,7 @@ function App() {
     window.electronAPI.getConfig().then((config) => {
       setToggleShortcut(config.shortcut)
       setToggleShortcutInput(config.shortcut)
+      setAlwaysOnTop(config.alwaysOnTop)
     })
   }, [])
 
@@ -104,6 +106,12 @@ function App() {
       }
     }
   }, [toggleShortcutInput])
+
+  const handleAlwaysOnTopChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.checked
+    const applied = await window.electronAPI.setAlwaysOnTop(next)
+    setAlwaysOnTop(applied)
+  }, [])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -269,7 +277,26 @@ function App() {
             </div>
             <div className="panel-content">
               <div className="settings-item">
-                <label>Toggle Window</label>
+                <div className="settings-row">
+                  <div>
+                    <div className="settings-label">Always on Top</div>
+                    <div className="setting-description">
+                      Keep this window above other applications.
+                    </div>
+                  </div>
+                  <label className="switch" htmlFor="always-on-top-toggle">
+                    <input
+                      id="always-on-top-toggle"
+                      type="checkbox"
+                      checked={alwaysOnTop}
+                      onChange={handleAlwaysOnTopChange}
+                    />
+                    <span className="switch-slider" />
+                  </label>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div className="settings-label">Toggle Window</div>
                 <div className="shortcut-current">
                   Current: <code>{toggleShortcut}</code>
                 </div>
