@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { HistoryEntry } from './types'
 
-type RecordingTarget = null | 'toggle' | 'copy'
-
 function App() {
   const [text, setText] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([])
@@ -10,9 +8,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [toggleShortcut, setToggleShortcut] = useState('')
   const [toggleShortcutInput, setToggleShortcutInput] = useState('')
-  const [copyShortcut, setCopyShortcut] = useState('')
-  const [copyShortcutInput, setCopyShortcutInput] = useState('')
-  const [recording, setRecording] = useState<RecordingTarget>(null)
+  const [recording, setRecording] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
@@ -29,8 +25,6 @@ function App() {
     window.electronAPI.getConfig().then((config) => {
       setToggleShortcut(config.shortcut)
       setToggleShortcutInput(config.shortcut)
-      setCopyShortcut(config.copyShortcut)
-      setCopyShortcutInput(config.copyShortcut)
     })
   }, [])
 
@@ -98,13 +92,8 @@ function App() {
     const key = e.key.length === 1 ? e.key.toUpperCase() : e.key
     parts.push(key)
 
-    const combo = parts.join('+')
-    if (recording === 'toggle') {
-      setToggleShortcutInput(combo)
-    } else {
-      setCopyShortcutInput(combo)
-    }
-    setRecording(null)
+    setToggleShortcutInput(parts.join('+'))
+    setRecording(false)
   }, [recording])
 
   const handleSaveToggleShortcut = useCallback(async () => {
@@ -115,15 +104,6 @@ function App() {
       }
     }
   }, [toggleShortcutInput])
-
-  const handleSaveCopyShortcut = useCallback(async () => {
-    if (copyShortcutInput.trim()) {
-      const success = await window.electronAPI.setCopyShortcut(copyShortcutInput)
-      if (success) {
-        setCopyShortcut(copyShortcutInput)
-      }
-    }
-  }, [copyShortcutInput])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -295,39 +275,20 @@ function App() {
                 </div>
                 <input
                   type="text"
-                  className={`shortcut-input ${recording === 'toggle' ? 'recording' : ''}`}
-                  value={recording === 'toggle' ? 'Press keys...' : toggleShortcutInput}
+                  className={`shortcut-input ${recording ? 'recording' : ''}`}
+                  value={recording ? 'Press keys...' : toggleShortcutInput}
                   onKeyDown={handleShortcutKeyDown}
-                  onFocus={() => setRecording('toggle')}
-                  onBlur={() => setRecording(null)}
+                  onFocus={() => setRecording(true)}
+                  onBlur={() => setRecording(false)}
                   readOnly
                   placeholder="Click to record shortcut"
                 />
                 <button className="btn-save" onClick={handleSaveToggleShortcut}>
                   Save
                 </button>
-              </div>
-              <div className="settings-item">
-                <label>Copy Text</label>
-                <div className="shortcut-current">
-                  Current: <code>{copyShortcut}</code>
+                <div className="shortcut-hint">
+                  Hiding the window also copies the editor text to clipboard.
                 </div>
-                <input
-                  type="text"
-                  className={`shortcut-input ${recording === 'copy' ? 'recording' : ''}`}
-                  value={recording === 'copy' ? 'Press keys...' : copyShortcutInput}
-                  onKeyDown={handleShortcutKeyDown}
-                  onFocus={() => setRecording('copy')}
-                  onBlur={() => setRecording(null)}
-                  readOnly
-                  placeholder="Click to record shortcut"
-                />
-                <button className="btn-save" onClick={handleSaveCopyShortcut}>
-                  Save
-                </button>
-              </div>
-              <div className="shortcut-hint">
-                The copy shortcut works even when the window is hidden.
               </div>
             </div>
           </div>

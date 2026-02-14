@@ -8,6 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   syncText: (text: string) => ipcRenderer.invoke('sync-text', text),
   getConfig: () => ipcRenderer.invoke('get-config'),
   setShortcut: (shortcut: string) => ipcRenderer.invoke('set-shortcut', shortcut),
-  setCopyShortcut: (shortcut: string) => ipcRenderer.invoke('set-copy-shortcut', shortcut),
   hideWindow: () => ipcRenderer.invoke('hide-window'),
 })

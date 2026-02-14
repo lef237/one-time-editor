@@ -6,7 +6,6 @@ export interface HistoryEntry {
 
 export interface AppConfig {
   shortcut: string
-  copyShortcut: string
 }
 
 export interface ElectronAPI {
@@ -17,7 +16,6 @@ export interface ElectronAPI {
   syncText: (text: string) => Promise<void>
   getConfig: () => Promise<AppConfig>
   setShortcut: (shortcut: string) => Promise<boolean>
-  setCopyShortcut: (shortcut: string) => Promise<boolean>
   hideWindow: () => Promise<void>
 }
 

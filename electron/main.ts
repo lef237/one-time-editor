@@ -16,7 +16,6 @@ const defaultMod = process.platform === 'darwin' ? 'Command' : 'Control'
 
 interface Config {
   shortcut: string
-  copyShortcut: string
 }
 
 interface HistoryEntry {
@@ -31,11 +30,10 @@ function loadConfig(): Config {
       const saved = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
       return {
         shortcut: saved.shortcut || `${defaultMod}+J`,
-        copyShortcut: saved.copyShortcut || `${defaultMod}+K`,
       }
     }
   } catch {}
-  return { shortcut: `${defaultMod}+J`, copyShortcut: `${defaultMod}+K` }
+  return { shortcut: `${defaultMod}+J` }
 }
 
 function saveConfig(config: Config) {
@@ -99,6 +97,7 @@ function toggleWindow() {
     return
   }
   if (win.isVisible()) {
+    copyText()
     win.hide()
   } else {
     win.show()
@@ -114,24 +113,19 @@ function copyText() {
 
 const shortcutValidator = /^(Command|Control|Alt|Shift|Meta|Super)(\+(Command|Control|Alt|Shift|Meta|Super))*\+[A-Za-z0-9]$/
 
-function registerShortcuts(config: Config) {
+function registerShortcut(config: Config) {
   globalShortcut.unregisterAll()
   try {
     globalShortcut.register(config.shortcut, toggleWindow)
   } catch {
     globalShortcut.register(`${defaultMod}+J`, toggleWindow)
   }
-  try {
-    globalShortcut.register(config.copyShortcut, copyText)
-  } catch {
-    globalShortcut.register(`${defaultMod}+K`, copyText)
-  }
 }
 
 app.whenReady().then(() => {
   const config = loadConfig()
   createWindow()
-  registerShortcuts(config)
+  registerShortcut(config)
 
   // IPC handlers
   ipcMain.handle('get-history', () => {
@@ -179,16 +173,7 @@ app.whenReady().then(() => {
     const config = loadConfig()
     config.shortcut = shortcut
     saveConfig(config)
-    registerShortcuts(config)
-    return true
-  })
-
-  ipcMain.handle('set-copy-shortcut', (_event, shortcut: string) => {
-    if (!shortcutValidator.test(shortcut)) return false
-    const config = loadConfig()
-    config.copyShortcut = shortcut
-    saveConfig(config)
-    registerShortcuts(config)
+    registerShortcut(config)
     return true
   })
 
