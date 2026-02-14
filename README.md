@@ -4,6 +4,10 @@ A lightweight scratchpad that lives one shortcut away. Draft a message, hit the 
 
 Built for the workflow of writing chat messages, AI prompts, and quick notes that you type once and send.
 
+## Download
+
+Pre-built binaries for macOS, Windows, and Linux are available on the [Releases](https://github.com/lef237/one-time-editor/releases) page.
+
 ## How it works
 
 1. Press `Cmd+J` (macOS) / `Ctrl+J` (Windows/Linux) to summon the editor
@@ -24,7 +28,7 @@ The shortcut is fully customizable — open settings and press your preferred ke
 - **Dark / Light theme** — Toggle between dark and light mode
 - **Configurable shortcut** — Change the global shortcut in settings by pressing your desired key combination
 
-## Setup
+## Development
 
 ```bash
 npm install
