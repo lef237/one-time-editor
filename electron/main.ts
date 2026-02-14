@@ -98,7 +98,11 @@ function toggleWindow() {
   }
   if (win.isVisible()) {
     copyText()
-    win.hide()
+    if (process.platform === 'darwin') {
+      app.hide()
+    } else {
+      win.hide()
+    }
   } else {
     win.show()
     win.focus()
