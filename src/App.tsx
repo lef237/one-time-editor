@@ -8,6 +8,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [shortcut, setShortcut] = useState('')
   const [shortcutInput, setShortcutInput] = useState('')
+  const [isRecording, setIsRecording] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
@@ -69,11 +70,34 @@ function App() {
     setHistory(updated)
   }, [])
 
+  const handleShortcutKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!isRecording) return
+    e.preventDefault()
+    e.stopPropagation()
+
+    const modifierKeys = ['Control', 'Alt', 'Shift', 'Meta']
+    if (modifierKeys.includes(e.key)) return
+
+    const parts: string[] = []
+    if (e.ctrlKey || e.metaKey) parts.push('CommandOrControl')
+    if (e.altKey) parts.push('Alt')
+    if (e.shiftKey) parts.push('Shift')
+
+    const key = e.key.length === 1 ? e.key.toUpperCase() : e.key
+    parts.push(key)
+
+    const combo = parts.join('+')
+    setShortcutInput(combo)
+    setIsRecording(false)
+  }, [isRecording])
+
   const handleSaveShortcut = useCallback(async () => {
     if (shortcutInput.trim()) {
-      await window.electronAPI.setShortcut(shortcutInput)
-      setShortcut(shortcutInput)
-      setShowSettings(false)
+      const success = await window.electronAPI.setShortcut(shortcutInput)
+      if (success) {
+        setShortcut(shortcutInput)
+        setShowSettings(false)
+      }
     }
   }, [shortcutInput])
 
@@ -247,14 +271,14 @@ function App() {
                 </div>
                 <input
                   type="text"
-                  className="shortcut-input"
-                  value={shortcutInput}
-                  onChange={(e) => setShortcutInput(e.target.value)}
-                  placeholder="e.g. CommandOrControl+Shift+M"
+                  className={`shortcut-input ${isRecording ? 'recording' : ''}`}
+                  value={isRecording ? 'Press keys...' : shortcutInput}
+                  onKeyDown={handleShortcutKeyDown}
+                  onFocus={() => setIsRecording(true)}
+                  onBlur={() => setIsRecording(false)}
+                  readOnly
+                  placeholder="Click to record shortcut"
                 />
-                <div className="shortcut-hint">
-                  e.g. CommandOrControl+M, Alt+Space, CommandOrControl+Shift+E
-                </div>
                 <button className="btn-save" onClick={handleSaveShortcut}>
                   Save
                 </button>

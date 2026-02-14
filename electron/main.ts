@@ -27,7 +27,7 @@ function loadConfig(): Config {
       return JSON.parse(fs.readFileSync(configPath, 'utf-8'))
     }
   } catch {}
-  return { shortcut: 'CommandOrControl+M' }
+  return { shortcut: 'CommandOrControl+J' }
 }
 
 function saveConfig(config: Config) {
@@ -104,7 +104,7 @@ function registerShortcut(shortcut: string) {
     globalShortcut.register(shortcut, toggleWindow)
   } catch {
     // Fallback
-    globalShortcut.register('CommandOrControl+M', toggleWindow)
+    globalShortcut.register('CommandOrControl+J', toggleWindow)
   }
 }
 
