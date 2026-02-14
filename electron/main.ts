@@ -85,12 +85,20 @@ function createWindow() {
   }
 }
 
-function toggleWindow() {
+async function toggleWindow() {
   if (!win) {
     createWindow()
     return
   }
   if (win.isVisible()) {
+    try {
+      const text: string = await win.webContents.executeJavaScript(
+        'document.querySelector(".editor")?.value || ""'
+      )
+      if (text.trim()) {
+        clipboard.writeText(text)
+      }
+    } catch {}
     win.hide()
   } else {
     win.show()

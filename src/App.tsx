@@ -282,6 +282,9 @@ function App() {
                 <button className="btn-save" onClick={handleSaveShortcut}>
                   Save
                 </button>
+                <div className="shortcut-hint">
+                  The shortcut toggles the window. When hiding, the editor text is automatically copied to clipboard.
+                </div>
               </div>
             </div>
           </div>

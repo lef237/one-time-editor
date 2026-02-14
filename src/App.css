@@ -288,6 +288,13 @@ body {
   cursor: default;
 }
 
+.shortcut-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
 .btn-save {
   padding: 6px 16px;
   background: var(--accent);
