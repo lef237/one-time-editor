@@ -9,10 +9,46 @@ html, body, #root {
   overflow: hidden;
 }
 
+/* Dark theme (default) */
+:root {
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-hover: #313244;
+  --bg-active: #45475a;
+  --border: #313244;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #585b70;
+  --accent: #89b4fa;
+  --accent-hover: #74c7ec;
+  --success: #a6e3a1;
+  --danger: #f38ba8;
+  --scrollbar: #313244;
+  --scrollbar-hover: #45475a;
+}
+
+/* Light theme */
+.light {
+  --bg-primary: #eff1f5;
+  --bg-secondary: #e6e9ef;
+  --bg-hover: #ccd0da;
+  --bg-active: #bcc0cc;
+  --border: #ccd0da;
+  --text-primary: #4c4f69;
+  --text-secondary: #5c5f77;
+  --text-muted: #9ca0b0;
+  --accent: #1e66f5;
+  --accent-hover: #2a6ef5;
+  --success: #40a02b;
+  --danger: #d20f39;
+  --scrollbar: #ccd0da;
+  --scrollbar-hover: #bcc0cc;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .app {
@@ -28,8 +64,8 @@ body {
   justify-content: space-between;
   height: 44px;
   padding: 0 16px 0 80px;
-  background: #181825;
-  border-bottom: 1px solid #313244;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
   user-select: none;
   flex-shrink: 0;
@@ -38,7 +74,7 @@ body {
 .titlebar-text {
   font-size: 13px;
   font-weight: 600;
-  color: #a6adc8;
+  color: var(--text-secondary);
   letter-spacing: 0.3px;
 }
 
@@ -57,23 +93,23 @@ body {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #a6adc8;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .btn:hover {
-  background: #313244;
-  color: #cdd6f4;
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .btn.active {
-  background: #45475a;
-  color: #cdd6f4;
+  background: var(--bg-active);
+  color: var(--text-primary);
 }
 
 .btn-copy.copied {
-  color: #a6e3a1;
+  color: var(--success);
 }
 
 /* Main area */
@@ -87,8 +123,8 @@ body {
 .editor {
   flex: 1;
   padding: 20px;
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   border: none;
   outline: none;
   resize: none;
@@ -99,7 +135,7 @@ body {
 }
 
 .editor::placeholder {
-  color: #585b70;
+  color: var(--text-muted);
 }
 
 /* Panel (shared) */
@@ -109,8 +145,8 @@ body {
   right: 0;
   width: 320px;
   height: 100%;
-  background: #181825;
-  border-left: 1px solid #313244;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   animation: slideIn 0.15s ease;
@@ -130,14 +166,14 @@ body {
 
 .panel-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #313244;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .panel-header h3 {
   font-size: 14px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text-primary);
 }
 
 .panel-content {
@@ -156,12 +192,12 @@ body {
 }
 
 .history-item:hover {
-  background: #313244;
+  background: var(--bg-hover);
 }
 
 .history-item-text {
   font-size: 13px;
-  color: #cdd6f4;
+  color: var(--text-primary);
   line-height: 1.5;
   word-break: break-all;
 }
@@ -175,13 +211,13 @@ body {
 
 .history-item-date {
   font-size: 11px;
-  color: #585b70;
+  color: var(--text-muted);
 }
 
 .history-delete-btn {
   background: none;
   border: none;
-  color: #585b70;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 16px;
   padding: 0 4px;
@@ -191,14 +227,14 @@ body {
 }
 
 .history-delete-btn:hover {
-  color: #f38ba8;
+  color: var(--danger);
   background: rgba(243, 139, 168, 0.1);
 }
 
 .empty-message {
   padding: 40px 20px;
   text-align: center;
-  color: #585b70;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -211,52 +247,52 @@ body {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .shortcut-current {
   font-size: 13px;
-  color: #a6adc8;
+  color: var(--text-secondary);
   margin-bottom: 12px;
 }
 
 .shortcut-current code {
-  background: #313244;
+  background: var(--bg-hover);
   padding: 2px 8px;
   border-radius: 4px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   font-size: 12px;
-  color: #89b4fa;
+  color: var(--accent);
 }
 
 .shortcut-input {
   width: 100%;
   padding: 8px 12px;
-  background: #1e1e2e;
-  border: 1px solid #313244;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: #cdd6f4;
+  color: var(--text-primary);
   font-size: 13px;
   outline: none;
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .shortcut-input:focus {
-  border-color: #89b4fa;
+  border-color: var(--accent);
 }
 
 .shortcut-hint {
   font-size: 11px;
-  color: #585b70;
+  color: var(--text-muted);
   margin-top: 6px;
   margin-bottom: 12px;
 }
 
 .btn-save {
   padding: 6px 16px;
-  background: #89b4fa;
-  color: #1e1e2e;
+  background: var(--accent);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -266,7 +302,7 @@ body {
 }
 
 .btn-save:hover {
-  background: #74c7ec;
+  background: var(--accent-hover);
 }
 
 /* Scrollbar */
@@ -279,10 +315,10 @@ body {
 }
 
 .panel-content::-webkit-scrollbar-thumb {
-  background: #313244;
+  background: var(--scrollbar);
   border-radius: 3px;
 }
 
 .panel-content::-webkit-scrollbar-thumb:hover {
-  background: #45475a;
+  background: var(--scrollbar-hover);
 }
