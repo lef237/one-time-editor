@@ -6,6 +6,7 @@ export interface HistoryEntry {
 
 export interface AppConfig {
   shortcut: string
+  alwaysOnTop: boolean
 }
 
 export interface ElectronAPI {
@@ -16,6 +17,7 @@ export interface ElectronAPI {
   syncText: (text: string) => Promise<void>
   getConfig: () => Promise<AppConfig>
   setShortcut: (shortcut: string) => Promise<boolean>
+  setAlwaysOnTop: (alwaysOnTop: boolean) => Promise<boolean>
   hideWindow: () => Promise<void>
 }
 
