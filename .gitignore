@@ -3,3 +3,4 @@ dist/
 dist-electron/
 *.local
 .DS_Store
+release/
