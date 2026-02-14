@@ -21,7 +21,7 @@ The shortcut is fully customizable — open settings and press your preferred ke
 - **Auto-copy on hide** — Text is copied to clipboard when the window is dismissed via shortcut
 - **Focus restore** — On macOS, focus returns to the app you were using before
 - **History** — Past entries are saved automatically when you start a new draft (up to 100)
-- **Dark / Light theme** — Toggle between Catppuccin Mocha and Latte
+- **Dark / Light theme** — Toggle between dark and light mode
 - **Configurable shortcut** — Change the global shortcut in settings by pressing your desired key combination
 
 ## Setup
