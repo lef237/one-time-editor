@@ -59,9 +59,10 @@ body {
 
 /* Titlebar */
 .titlebar {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   height: 44px;
   padding: 0 16px 0 80px;
   background: var(--bg-secondary);
@@ -72,6 +73,9 @@ body {
 }
 
 .titlebar-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
