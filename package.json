@@ -1,6 +1,6 @@
 {
   "name": "one-time-editor",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A temporary notepad app for drafting chat messages and prompts before sending",
   "main": "dist-electron/main.js",
   "scripts": {
