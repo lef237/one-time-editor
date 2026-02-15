@@ -88,6 +88,7 @@ function createWindow(config: Config) {
 
 
   win.on('close', () => {
+    copyText()
     saveCurrentTextToHistory()
   })
 
