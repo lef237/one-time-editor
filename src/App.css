@@ -80,6 +80,13 @@ body {
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.3px;
+  pointer-events: none;
+}
+
+@media (max-width: 500px) {
+  .titlebar-text {
+    display: none;
+  }
 }
 
 .titlebar-buttons {
