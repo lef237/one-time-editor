@@ -4,9 +4,9 @@ A lightweight scratchpad that lives one shortcut away. Draft a message, hit the 
 
 Built for the workflow of writing chat messages, AI prompts, and quick notes that you type once and send.
 
-[![Demo](https://img.youtube.com/vi/qFwv2_308iI/maxresdefault.jpg)](https://youtu.be/qFwv2_308iI)
+[![Demo](https://img.youtube.com/vi/qwj9fr77vQg/maxresdefault.jpg)](https://youtu.be/qwj9fr77vQg)
 
-https://youtu.be/qFwv2_308iI
+https://youtu.be/qwj9fr77vQg
 
 ## Install
 
