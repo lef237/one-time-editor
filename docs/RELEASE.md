@@ -37,8 +37,10 @@
 
    ```bash
    # Download the dmg and get sha256
-   gh release download vX.Y.Z --repo lef237/one-time-editor --pattern "*.dmg" --dir /tmp/ote-release
-   shasum -a 256 /tmp/ote-release/*.dmg
+   gh release download vX.Y.Z --repo lef237/one-time-editor --pattern "*.dmg" --dir release-download
+   shasum -a 256 release-download/*.dmg
+   # Move to ~/Downloads when done
+   mv release-download/*.dmg ~/Downloads/
    ```
 
    Edit `Casks/one-time-editor.rb` in `~/ghq/github.com/lef237/homebrew-tap`:
