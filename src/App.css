@@ -149,6 +149,13 @@ body {
   color: var(--text-muted);
 }
 
+/* Panel backdrop */
+.panel-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
 /* Panel (shared) */
 .panel {
   position: absolute;

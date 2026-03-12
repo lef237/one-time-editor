@@ -290,6 +290,9 @@ function App() {
 
       {/* Main area */}
       <div className="main-area">
+        {(showSettings || showHistory) && (
+          <div className="panel-backdrop" onClick={() => { setShowSettings(false); setShowHistory(false) }} />
+        )}
         <textarea
           ref={textareaRef}
           className="editor"
