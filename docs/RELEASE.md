@@ -21,11 +21,19 @@
 
    This triggers a GitHub Actions workflow that builds for macOS, Windows, and Linux.
 
-4. **Publish the release**
+4. **Wait for the build to complete**
 
-   Go to https://github.com/lef237/one-time-editor/releases and publish the draft release.
+   ```bash
+   gh run watch --repo lef237/one-time-editor
+   ```
 
-5. **Update homebrew-tap**
+5. **Publish the release**
+
+   ```bash
+   gh release edit vX.Y.Z --repo lef237/one-time-editor --draft=false --latest
+   ```
+
+6. **Update homebrew-tap**
 
    ```bash
    # Download the dmg and get sha256
@@ -33,7 +41,7 @@
    shasum -a 256 /tmp/ote-release/*.dmg
    ```
 
-   Edit `Casks/one-time-editor.rb` in the [homebrew-tap](https://github.com/lef237/homebrew-tap) repository:
+   Edit `Casks/one-time-editor.rb` in `~/ghq/github.com/lef237/homebrew-tap`:
 
    - Update `version` to the new version
    - Update `sha256` to the hash from the command above
