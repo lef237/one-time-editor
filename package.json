@@ -4,6 +4,7 @@
   "description": "A temporary notepad app for drafting chat messages and prompts before sending",
   "main": "dist-electron/main.js",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
