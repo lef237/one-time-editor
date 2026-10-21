@@ -180,6 +180,8 @@ function toggleWindow() {
 
 function copyText() {
   if (currentText.trim()) {
+    // Resolves asynchronously, but the text is committed before it returns,
+    // so quitting right after a copy keeps it on the clipboard.
     clipboard.writeText(currentText)
   }
 }
@@ -220,7 +222,7 @@ function createMenuBar() {
     { type: 'separator' },
     { label: 'Quit One-Time Editor', click: () => app.quit() },
   ]))
-  app.dock.hide()
+  app.dock?.hide()
 }
 
 function applyMenuBarPreference(enabled: boolean) {
@@ -231,7 +233,7 @@ function applyMenuBarPreference(enabled: boolean) {
   } else {
     tray?.destroy()
     tray = null
-    app.dock.show()
+    app.dock?.show()
   }
 }
 
@@ -282,7 +284,7 @@ app.whenReady().then(() => {
   })
 
   handleFromApp('copy-to-clipboard', (_event, text: string) => {
-    clipboard.writeText(text)
+    return clipboard.writeText(text)
   })
 
   handleFromApp('sync-text', (_event, text: string) => {
