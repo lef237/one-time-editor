@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import electron from 'vite-plugin-electron'
-import renderer from 'vite-plugin-electron-renderer'
 
 export default defineConfig({
+  // The packaged app loads index.html from file://, so assets must be relative.
+  base: './',
   plugins: [
     react(),
     electron([
@@ -20,6 +21,5 @@ export default defineConfig({
         },
       },
     ]),
-    renderer(),
   ],
 })
