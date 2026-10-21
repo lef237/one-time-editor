@@ -6,6 +6,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
 
+// IPC as sent by the bundled editor page that the main process loads.
+const appEvent = { senderFrame: { url: 'file:///app/dist/index.html' } };
+
 // Exercise the real main process with an in-memory Electron host, without
 // opening windows, touching the clipboard, or changing the user's notes.
 async function launch(platform = 'darwin', initialConfig = null) {
@@ -22,7 +25,11 @@ async function launch(platform = 'darwin', initialConfig = null) {
     quit() { app.emit('before-quit'); app.emit('will-quit'); app.quitCalled = true; }
   });
   class Window extends EventEmitter {
-    constructor() { super(); this.visible = false; windows.push(this); }
+    constructor() {
+      super(); this.visible = false; windows.push(this);
+      this.webContents = Object.assign(new EventEmitter(), { setWindowOpenHandler(handler) { this.windowOpenHandler = handler; } });
+      app.emit('web-contents-created', {}, this.webContents);
+    }
     loadFile() { this.emit('ready-to-show'); }
     show() { this.visible = true; }
     hide() { this.visible = false; }
@@ -87,7 +94,7 @@ test('closing a menu-bar Mac window preserves it and Control+J brings it back', 
 });
 test('closing a preserved menu-bar window does not duplicate the draft in history', async () => {
   const { app, windows, ipcHandlers, writes } = await launch('darwin', { showInMenuBar: true });
-  await ipcHandlers.get('sync-text')(null, 'draft');
+  await ipcHandlers.get('sync-text')(appEvent, 'draft');
   windows[0].close();
   windows[0].show();
   windows[0].close();
@@ -98,7 +105,7 @@ test('closing a preserved menu-bar window does not duplicate the draft in histor
 });
 test('closing a Dock-mode Mac window destroys it and saves the draft', async () => {
   const { windows, ipcHandlers, writes } = await launch();
-  await ipcHandlers.get('sync-text')(null, 'draft');
+  await ipcHandlers.get('sync-text')(appEvent, 'draft');
   windows[0].close();
   assert.equal(windows[0].destroyed, true);
   assert.equal(writes.length, 1);
@@ -140,7 +147,7 @@ test('shortcut restores a minimized editor', async () => {
 test('enabling the menu-bar preference from settings creates the tray and hides the Dock', async () => {
   const { app, trays, ipcHandlers, writes } = await launch();
   assert.equal(trays.length, 0);
-  const applied = await ipcHandlers.get('set-show-in-menu-bar')(null, true);
+  const applied = await ipcHandlers.get('set-show-in-menu-bar')(appEvent, true);
   assert.equal(applied, true);
   assert.equal(trays.length, 1);
   assert.equal(app.dockHidden, true);
@@ -149,10 +156,34 @@ test('enabling the menu-bar preference from settings creates the tray and hides 
 });
 test('disabling the menu-bar preference from settings restores the Dock and removes the tray', async () => {
   const { app, trays, ipcHandlers, writes } = await launch('darwin', { showInMenuBar: true });
-  const applied = await ipcHandlers.get('set-show-in-menu-bar')(null, false);
+  const applied = await ipcHandlers.get('set-show-in-menu-bar')(appEvent, false);
   assert.equal(applied, false);
   assert.equal(trays[0].destroyed, true);
   assert.equal(app.dockHidden, false);
   assert.equal(writes.length, 1);
   assert.equal(JSON.parse(writes[0].data).showInMenuBar, false);
+});
+
+test('the editor window cannot be navigated away or open pop-ups', async () => {
+  const { windows } = await launch();
+  const contents = windows[0].webContents;
+  const navigate = url => {
+    let prevented = false;
+    contents.emit('will-navigate', { preventDefault() { prevented = true; } }, url);
+    return prevented;
+  };
+  assert.equal(navigate('file:///Users/me/Downloads/dropped.html'), true, 'a dropped file must not replace the editor');
+  assert.equal(navigate('https://example.com/'), true, 'a dropped link must not replace the editor');
+  assert.equal(navigate(appEvent.senderFrame.url), false, 'reloading the editor itself stays allowed');
+  assert.equal(contents.windowOpenHandler({ url: 'https://example.com/' }).action, 'deny');
+});
+test('IPC is only served to the editor page', async () => {
+  const { ipcHandlers, writes } = await launch();
+  assert.equal((await ipcHandlers.get('get-history')(appEvent)).length, 0);
+  for (const url of ['file:///Users/me/Downloads/dropped.html', 'https://example.com/', undefined]) {
+    const event = { senderFrame: url === undefined ? null : { url } };
+    await assert.rejects(async () => ipcHandlers.get('get-history')(event));
+    await assert.rejects(async () => ipcHandlers.get('save-to-history')(event, 'injected'));
+  }
+  assert.equal(writes.length, 0, 'rejected calls must not touch the history file');
 });

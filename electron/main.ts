@@ -1,8 +1,10 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, clipboard, Tray, Menu, nativeImage } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, clipboard, Tray, Menu, nativeImage, type IpcMainInvokeEvent } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
+import { fileURLToPath, URL } from 'node:url'
 
 process.env.DIST = path.join(__dirname, '../dist')
+const appPagePath = path.join(process.env.DIST, 'index.html')
 
 let win: BrowserWindow | null = null
 let tray: Tray | null = null
@@ -87,6 +89,25 @@ function saveHistory(history: HistoryEntry[]) {
   fs.writeFileSync(historyPath, JSON.stringify(history, null, 2))
 }
 
+// Only the app's own page may navigate the window or call into the main process.
+// A dropped file or link would otherwise load with the preload API attached.
+function isAppURL(url: string | undefined) {
+  if (!url) return false
+  try {
+    if (VITE_DEV_SERVER_URL) return new URL(url).origin === new URL(VITE_DEV_SERVER_URL).origin
+    return fileURLToPath(url) === appPagePath
+  } catch {
+    return false
+  }
+}
+
+function handleFromApp(channel: string, listener: (event: IpcMainInvokeEvent, ...args: any[]) => unknown) {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!isAppURL(event.senderFrame?.url)) throw new Error(`Rejected ${channel} from an untrusted page`)
+    return listener(event, ...args)
+  })
+}
+
 function createWindow(config: Config) {
   win = new BrowserWindow({
     width: 700,
@@ -95,6 +116,7 @@ function createWindow(config: Config) {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 15, y: 15 },
@@ -128,7 +150,7 @@ function createWindow(config: Config) {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
-    win.loadFile(path.join(process.env.DIST!, 'index.html'))
+    win.loadFile(appPagePath)
   }
 }
 
@@ -217,6 +239,13 @@ app.on('before-quit', () => {
   isQuitting = true
 })
 
+app.on('web-contents-created', (_event, contents) => {
+  contents.on('will-navigate', (event, url) => {
+    if (!isAppURL(url)) event.preventDefault()
+  })
+  contents.setWindowOpenHandler(() => ({ action: 'deny' }))
+})
+
 app.whenReady().then(() => {
   const config = loadConfig()
   applyMenuBarPreference(config.showInMenuBar)
@@ -224,11 +253,11 @@ app.whenReady().then(() => {
   registerShortcut(config)
 
   // IPC handlers
-  ipcMain.handle('get-history', () => {
+  handleFromApp('get-history', () => {
     return loadHistory()
   })
 
-  ipcMain.handle('save-to-history', (_event, text: string) => {
+  handleFromApp('save-to-history', (_event, text: string) => {
     if (!text.trim()) return loadHistory()
     const history = loadHistory()
     const entry: HistoryEntry = {
@@ -245,26 +274,26 @@ app.whenReady().then(() => {
     return history
   })
 
-  ipcMain.handle('delete-history-entry', (_event, id: string) => {
+  handleFromApp('delete-history-entry', (_event, id: string) => {
     let history = loadHistory()
     history = history.filter(h => h.id !== id)
     saveHistory(history)
     return history
   })
 
-  ipcMain.handle('copy-to-clipboard', (_event, text: string) => {
+  handleFromApp('copy-to-clipboard', (_event, text: string) => {
     clipboard.writeText(text)
   })
 
-  ipcMain.handle('sync-text', (_event, text: string) => {
+  handleFromApp('sync-text', (_event, text: string) => {
     currentText = text
   })
 
-  ipcMain.handle('get-config', () => {
+  handleFromApp('get-config', () => {
     return loadConfig()
   })
 
-  ipcMain.handle('set-shortcut', (_event, shortcut: string) => {
+  handleFromApp('set-shortcut', (_event, shortcut: string) => {
     if (!shortcutValidator.test(shortcut)) return false
     const config = loadConfig()
     config.shortcut = shortcut
@@ -273,7 +302,7 @@ app.whenReady().then(() => {
     return true
   })
 
-  ipcMain.handle('set-local-shortcut', (_event, name: string, shortcut: string) => {
+  handleFromApp('set-local-shortcut', (_event, name: string, shortcut: string) => {
     if (name !== 'new' && name !== 'copy') return false
     if (!shortcutValidator.test(shortcut)) return false
     const config = loadConfig()
@@ -286,7 +315,7 @@ app.whenReady().then(() => {
     return true
   })
 
-  ipcMain.handle('set-always-on-top', (_event, alwaysOnTop: boolean) => {
+  handleFromApp('set-always-on-top', (_event, alwaysOnTop: boolean) => {
     const config = loadConfig()
     config.alwaysOnTop = alwaysOnTop === true
     saveConfig(config)
@@ -294,21 +323,21 @@ app.whenReady().then(() => {
     return config.alwaysOnTop
   })
 
-  ipcMain.handle('set-indent', (_event, indentType: string, indentSize: number) => {
+  handleFromApp('set-indent', (_event, indentType: string, indentSize: number) => {
     const config = loadConfig()
     config.indentType = indentType === 'tab' ? 'tab' : 'space'
     config.indentSize = [2, 4, 6, 8].includes(indentSize) ? indentSize : 2
     saveConfig(config)
   })
 
-  ipcMain.handle('set-show-whitespace', (_event, showWhitespace: boolean) => {
+  handleFromApp('set-show-whitespace', (_event, showWhitespace: boolean) => {
     const config = loadConfig()
     config.showWhitespace = showWhitespace === true
     saveConfig(config)
     return config.showWhitespace
   })
 
-  ipcMain.handle('set-show-in-menu-bar', (_event, showInMenuBar: boolean) => {
+  handleFromApp('set-show-in-menu-bar', (_event, showInMenuBar: boolean) => {
     const config = loadConfig()
     config.showInMenuBar = showInMenuBar === true
     saveConfig(config)
